@@ -1,0 +1,131 @@
+- table:
+    schema: public
+    name: task_assignments
+  object_relationships:
+  - name: task
+    using:
+      foreign_key_constraint_on: task_id
+  - name: user
+    using:
+      foreign_key_constraint_on: user_id
+  insert_permissions:
+  - role: user
+    permission:
+      check: {}
+      columns:
+      - task_id
+      - user_id
+      backend_only: false
+  select_permissions:
+  - role: user
+    permission:
+      columns:
+      - id
+      - task_id
+      - user_id
+      filter: {}
+- table:
+    schema: public
+    name: tasks
+  object_relationships:
+  - name: user
+    using:
+      foreign_key_constraint_on: created_by
+  array_relationships:
+  - name: task_assignments
+    using:
+      foreign_key_constraint_on:
+        column: task_id
+        table:
+          schema: public
+          name: task_assignments
+  - name: tasks_reads
+    using:
+      foreign_key_constraint_on:
+        column: task_id
+        table:
+          schema: public
+          name: tasks_read
+  insert_permissions:
+  - role: user
+    permission:
+      check: {}
+      set:
+        created_by: x-hasura-User-Id
+      columns:
+      - due
+      - title
+      backend_only: false
+  select_permissions:
+  - role: user
+    permission:
+      columns:
+      - id
+      - created_at
+      - updated_at
+      - title
+      - due
+      - created_by
+      filter: {}
+- table:
+    schema: public
+    name: tasks_read
+  object_relationships:
+  - name: task
+    using:
+      foreign_key_constraint_on: task_id
+  - name: user
+    using:
+      foreign_key_constraint_on: user_id
+  insert_permissions:
+  - role: user
+    permission:
+      check: {}
+      set:
+        user_id: x-hasura-User-Id
+      columns:
+      - task_id
+      backend_only: false
+  select_permissions:
+  - role: user
+    permission:
+      columns:
+      - id
+      - task_id
+      - user_id
+      - created_at
+      filter:
+        user_id:
+          _eq: X-Hasura-User-Id
+- table:
+    schema: public
+    name: users
+  array_relationships:
+  - name: task_assignments
+    using:
+      foreign_key_constraint_on:
+        column: user_id
+        table:
+          schema: public
+          name: task_assignments
+  - name: tasks
+    using:
+      foreign_key_constraint_on:
+        column: created_by
+        table:
+          schema: public
+          name: tasks
+  - name: tasks_reads
+    using:
+      foreign_key_constraint_on:
+        column: user_id
+        table:
+          schema: public
+          name: tasks_read
+  select_permissions:
+  - role: user
+    permission:
+      columns:
+      - id
+      - name
+      filter: {}
